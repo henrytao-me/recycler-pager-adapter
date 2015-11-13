@@ -1,5 +1,5 @@
 # library releases #
 
-### Version 0.1.0 – October 12th 2015 ###
+### Version 1.0.0 – November 14th 2015 ###
 
 Initial release

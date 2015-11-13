@@ -1,4 +1,4 @@
-[ ![Download](https://api.bintray.com/packages/henrytao-me/maven/bootstrap-android-library/images/download.svg) ](https://bintray.com/henrytao-me/maven/bootstrap-android-library/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/henrytao-me/maven/recycler-pager-adapter/images/download.svg) ](https://bintray.com/henrytao-me/maven/recycler-pager-adapter/_latestVersion)
 
 bootstrap-android-library
 ================

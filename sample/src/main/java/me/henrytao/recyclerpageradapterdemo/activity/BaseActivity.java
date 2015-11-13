@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.henrytao.bootstrapandroidlibrarydemo.activity;
+package me.henrytao.recyclerpageradapterdemo.activity;
 
 import com.android.vending.billing.IInAppBillingService;
 
@@ -51,7 +51,7 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import me.henrytao.bootstrapandroidlibrarydemo.R;
+import me.henrytao.recyclerpageradapterdemo.R;
 
 /**
  * Created by henrytao on 10/11/15.
