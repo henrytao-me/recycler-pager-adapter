@@ -12,7 +12,7 @@ Recycling mechanism for pager adapter
 compile "me.henrytao:recycler-pager-adapter:<latest-version>"
 ```
 
-`smooth-app-bar-layout` is deployed to `jCenter`. Make sure you have `jcenter()` in your project gradle.
+`recycler-pager-adapter` is deployed to `jCenter`. Make sure you have `jcenter()` in your project gradle.
 
 
 ## Idea
