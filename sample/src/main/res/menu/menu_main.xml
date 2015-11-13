@@ -23,6 +23,7 @@
     android:id="@+id/action_donate"
     android:icon="@drawable/ic_toolbar_donate_circle"
     android:title="@string/text_donate"
+    android:visible="false"
     compat:showAsAction="always" />
 
   <item
