@@ -1,4 +1,4 @@
-[ ![Download](https://api.bintray.com/packages/henrytao-me/maven/recycler-pager-adapter/images/download.svg) ](https://bintray.com/henrytao-me/maven/recycler-pager-adapter/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/henrytao-me/maven/recycler-pager-adapter/images/download.svg) ](https://bintray.com/henrytao-me/maven/recycler-pager-adapter/_latestVersion) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-recycler--pager--adapter-green.svg?style=true)](https://android-arsenal.com/details/1/2792)
 
 recycler-pager-adaper
 ================
