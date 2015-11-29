@@ -38,9 +38,9 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   public abstract VH onCreateViewHolder(ViewGroup parent, int viewType);
 
-  private static final boolean DEBUG = false;
-
   private static final String TAG = "RecyclerPagerAdapter";
+
+  protected static boolean DEBUG = false;
 
   private Map<Integer, RecycleCache> mRecycleCacheMap = new HashMap<>();
 
