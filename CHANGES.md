@@ -1,5 +1,9 @@
 # library releases #
 
+### Version 2.0.0 – August 19th 2016 ###
+
+Updated to latest support library
+
 ### Version 1.0.2 – November 29th 2015 ###
 
 Support extending debugger
