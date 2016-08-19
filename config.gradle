@@ -22,12 +22,12 @@ ext {
 
   android = [
       compileSdkVersion: 23,
-      buildToolsVersion: "23.0.1",
+      buildToolsVersion: "23.0.2",
       applicationId    : "me.henrytao.recyclerpageradapter",
       minSdkVersion    : 8,
       targetSdkVersion : 23,
-      versionCode      : 1,
-      versionName      : "1.0.2"
+      versionCode      : 2,
+      versionName      : "2.0.0"
   ]
 
   bintray = [
@@ -55,12 +55,16 @@ ext {
   ]
 
   dependencies = [
-      "com.android.support:design"         : "com.android.support:design:23.1.0",
-      "com.android.support:appcompat-v7"   : "com.android.support:appcompat-v7:23.1.0",
-      "com.android.support:cardview-v7"    : "com.android.support:cardview-v7:23.1.0",
-      "com.android.support:recyclerview-v7": "com.android.support:recyclerview-v7:23.1.0",
+      "com.android.support:appcompat-v7": "com.android.support:appcompat-v7:23.2.0"
+  ]
 
-      "me.henrytao:mdcore"                 : "me.henrytao:mdcore:1.2.0",
+  sampleDependencies = [
+      "com.android.support:design"         : "com.android.support:design:23.2.0",
+      "com.android.support:appcompat-v7"   : "com.android.support:appcompat-v7:23.2.0",
+      "com.android.support:cardview-v7"    : "com.android.support:cardview-v7:23.2.0",
+      "com.android.support:recyclerview-v7": "com.android.support:recyclerview-v7:23.2.0",
+
+      "me.henrytao:mdcore"                 : "me.henrytao:mdcore:3.1.1",
 
       "com.jakewharton:butterknife"        : "com.jakewharton:butterknife:7.0.1"
   ]

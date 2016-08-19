@@ -17,14 +17,12 @@
 package me.henrytao.recyclerpageradapter;
 
 import android.support.v4.view.PagerAdapter;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -40,15 +38,19 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   private static final String TAG = "RecyclerPagerAdapter";
 
-  protected static boolean DEBUG = false;
+  public static boolean DEBUG = false;
+
+  private Logger mLogger;
 
   private Map<Integer, RecycleCache> mRecycleCacheMap = new HashMap<>();
 
+  public RecyclerPagerAdapter() {
+    mLogger = Logger.newInstance(DEBUG ? Logger.LogLevel.VERBOSE : Logger.LogLevel.NONE);
+  }
+
   @Override
   public void destroyItem(ViewGroup parent, int position, Object object) {
-    if (DEBUG) {
-      Log.i(TAG, String.format(Locale.US, "destroyItem | position: %d | instanceOfViewHolder: %b", position, object instanceof ViewHolder));
-    }
+    mLogger.d("destroyItem | position: %d | instanceOfViewHolder: %b", position, object instanceof ViewHolder);
     if (object instanceof ViewHolder) {
       ViewHolder viewHolder = (ViewHolder) object;
       viewHolder.mIsAttached = false;
@@ -64,15 +66,14 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   @Override
   public int getItemPosition(Object object) {
-    if (DEBUG) {
-      Log.i(TAG, String.format(Locale.US, "getItemPosition | instanceOfViewHolder: %b | currentPosition: %d | isAttached: %b",
-          object instanceof ViewHolder,
-          object instanceof ViewHolder ? ((ViewHolder) object).mCurrentPosition : -1,
-          object instanceof ViewHolder && ((ViewHolder) object).mIsAttached));
-    }
+    mLogger.d("getItemPosition | instanceOfViewHolder: %b | currentPosition: %d | isAttached: %b",
+        object instanceof ViewHolder,
+        object instanceof ViewHolder ? ((ViewHolder) object).mCurrentPosition : -1,
+        object instanceof ViewHolder && ((ViewHolder) object).mIsAttached);
     return POSITION_NONE;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Object instantiateItem(ViewGroup parent, int position) {
     int viewType = getItemViewType(position);
@@ -83,10 +84,8 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
     viewHolder.mIsAttached = true;
     onBindViewHolder((VH) viewHolder, position);
     parent.addView(viewHolder.mItemView);
-    if (DEBUG) {
-      Log.i(TAG, String.format(Locale.US, "instantiateItem | position: %d | viewType: %d | cacheCount: %d",
-          position, viewType, mRecycleCacheMap.get(viewType).mCaches.size()));
-    }
+    mLogger.d("instantiateItem | position: %d | viewType: %d | cacheCount: %d",
+        position, viewType, mRecycleCacheMap.get(viewType).mCaches.size());
     return viewHolder;
   }
 
@@ -97,14 +96,10 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   @Override
   public void notifyDataSetChanged() {
-    if (DEBUG) {
-      Log.i(TAG, String.format(Locale.US, "notifyDataSetChanged"));
-    }
+    mLogger.d("notifyDataSetChanged");
     super.notifyDataSetChanged();
-    List<ViewHolder> attachedViewHolders = getAttachedViewHolders();
-    int i = 0;
-    for (int n = attachedViewHolders.size(); i < n; i++) {
-      onNotifyItemChanged(attachedViewHolders.get(i));
+    for (ViewHolder viewHolder : getAttachedViewHolders()) {
+      onNotifyItemChanged(viewHolder);
     }
   }
 
