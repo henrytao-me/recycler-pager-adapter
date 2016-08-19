@@ -24,6 +24,7 @@ import android.view.MenuItem;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import me.henrytao.recyclerpageradapter.RecyclerPagerAdapter;
 import me.henrytao.recyclerpageradapterdemo.R;
 import me.henrytao.recyclerpageradapterdemo.adapter.PagerAdapter;
 
@@ -61,6 +62,7 @@ public class MainActivity extends BaseActivity {
     ButterKnife.bind(this);
     setSupportActionBar(vToolbar);
 
+    RecyclerPagerAdapter.DEBUG = true;
     mPagerAdapter = new PagerAdapter();
     vViewPager.setAdapter(mPagerAdapter);
   }
