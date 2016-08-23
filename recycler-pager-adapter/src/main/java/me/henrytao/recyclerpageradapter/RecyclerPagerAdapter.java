@@ -45,7 +45,7 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
   private Map<Integer, RecycleCache> mRecycleCacheMap = new HashMap<>();
 
   public RecyclerPagerAdapter() {
-    mLogger = Logger.newInstance(DEBUG ? Logger.LogLevel.VERBOSE : Logger.LogLevel.NONE);
+    mLogger = Logger.newInstance(TAG, DEBUG ? Logger.LogLevel.VERBOSE : Logger.LogLevel.NONE);
   }
 
   @Override
@@ -55,7 +55,7 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
       ViewHolder viewHolder = (ViewHolder) object;
       viewHolder.mIsAttached = false;
       viewHolder.mCurrentPosition = position;
-      parent.removeView(viewHolder.getItemView());
+      parent.removeView(viewHolder.itemView);
     }
   }
 
@@ -83,7 +83,7 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
     ViewHolder viewHolder = mRecycleCacheMap.get(viewType).getFreeViewHolder();
     viewHolder.mIsAttached = true;
     onBindViewHolder((VH) viewHolder, position);
-    parent.addView(viewHolder.mItemView);
+    parent.addView(viewHolder.itemView);
     mLogger.d("instantiateItem | position: %d | viewType: %d | cacheCount: %d",
         position, viewType, mRecycleCacheMap.get(viewType).mCaches.size());
     return viewHolder;
@@ -91,7 +91,7 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   @Override
   public boolean isViewFromObject(View view, Object object) {
-    return object == view || (object instanceof ViewHolder && ((ViewHolder) object).getItemView() == view);
+    return object == view || (object instanceof ViewHolder && ((ViewHolder) object).itemView == view);
   }
 
   @Override
@@ -158,7 +158,7 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   public static abstract class ViewHolder {
 
-    private final View mItemView;
+    public final View itemView;
 
     private int mCurrentPosition;
 
@@ -168,11 +168,7 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
       if (itemView == null) {
         throw new IllegalArgumentException("itemView may not be null");
       }
-      mItemView = itemView;
-    }
-
-    public View getItemView() {
-      return mItemView;
+      this.itemView = itemView;
     }
   }
 }
