@@ -16,14 +16,16 @@
 
 package me.henrytao.recyclerpageradapter;
 
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by henrytao on 11/13/15.
@@ -42,19 +44,26 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   private Logger mLogger;
 
-  private Map<Integer, RecycleCache> mRecycleCacheMap = new HashMap<>();
+  private SparseArray<RecycleCache> mRecycleCacheMap = new SparseArray<>();
+
+  private SparseArray<SparseArray<Parcelable>> mSaveStates = new SparseArray<>();
+
 
   public RecyclerPagerAdapter() {
     mLogger = Logger.newInstance(TAG, DEBUG ? Logger.LogLevel.VERBOSE : Logger.LogLevel.NONE);
   }
 
   @Override
-  public void destroyItem(ViewGroup parent, int position, Object object) {
+  public final void destroyItem(ViewGroup parent, int position, Object object) {
     mLogger.d("destroyItem | position: %d | instanceOfViewHolder: %b", position, object instanceof ViewHolder);
     if (object instanceof ViewHolder) {
       ViewHolder viewHolder = (ViewHolder) object;
       viewHolder.mIsAttached = false;
       viewHolder.mCurrentPosition = position;
+      if (mSaveStates.get(position) == null) {
+        mSaveStates.put(position, new SparseArray<Parcelable>());
+      }
+      viewHolder.itemView.saveHierarchyState(mSaveStates.get(position));
       parent.removeView(viewHolder.itemView);
     }
   }
@@ -75,22 +84,33 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   @SuppressWarnings("unchecked")
   @Override
-  public Object instantiateItem(ViewGroup parent, int position) {
+  public final Object instantiateItem(ViewGroup parent, int position) {
     int viewType = getItemViewType(position);
-    if (!mRecycleCacheMap.containsKey(viewType)) {
+    if (mRecycleCacheMap.get(viewType) == null) {
       mRecycleCacheMap.put(viewType, new RecycleCache(this, parent, viewType));
     }
     ViewHolder viewHolder = mRecycleCacheMap.get(viewType).getFreeViewHolder();
+    if (viewHolder.itemView.getId() == View.NO_ID) {
+      if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        viewHolder.itemView.setId(View.generateViewId());
+      } else {
+        viewHolder.itemView.setId(Utils.generateViewId());
+      }
+    }
     viewHolder.mIsAttached = true;
     onBindViewHolder((VH) viewHolder, position);
     parent.addView(viewHolder.itemView);
     mLogger.d("instantiateItem | position: %d | viewType: %d | cacheCount: %d",
         position, viewType, mRecycleCacheMap.get(viewType).mCaches.size());
+    SparseArray saveStates = mSaveStates.get(position);
+    if (saveStates != null) {
+      viewHolder.itemView.restoreHierarchyState(saveStates);
+    }
     return viewHolder;
   }
 
   @Override
-  public boolean isViewFromObject(View view, Object object) {
+  public final boolean isViewFromObject(View view, Object object) {
     return object == view || (object instanceof ViewHolder && ((ViewHolder) object).itemView == view);
   }
 
@@ -112,8 +132,9 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   private List<ViewHolder> getAttachedViewHolders() {
     List<ViewHolder> viewHolders = new ArrayList<>();
-    for (Map.Entry<Integer, RecycleCache> entry : mRecycleCacheMap.entrySet()) {
-      List<ViewHolder> cache = entry.getValue().mCaches;
+    for (int index = 0; index < mRecycleCacheMap.size(); index++) {
+      int key = mRecycleCacheMap.keyAt(index);
+      List<ViewHolder> cache = mRecycleCacheMap.get(key).mCaches;
       int i = 0;
       for (int n = cache.size(); i < n; i++) {
         if (cache.get(i).mIsAttached) {
@@ -122,6 +143,39 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
       }
     }
     return viewHolders;
+  }
+
+  final String PREFIX_KEY = "states_";
+
+  final int PREFIX_LENGTH = PREFIX_KEY.length();
+
+  @Override
+  public Parcelable saveState() {
+    Bundle bundle = new Bundle();
+    for (int i = 0; i < mSaveStates.size(); i++) {
+      int key = mSaveStates.keyAt(i);
+      SparseArray<Parcelable> obj = mSaveStates.get(key);
+      bundle.putSparseParcelableArray(PREFIX_KEY + key, obj);
+    }
+    return bundle;
+  }
+
+  @Override
+  public void restoreState(Parcelable state, ClassLoader loader) {
+    if (state != null) {
+      Bundle bundle = (Bundle) state;
+      mSaveStates = new SparseArray<>(bundle.size());
+      for (String key : bundle.keySet()) {
+        if (key.startsWith(PREFIX_KEY)) {
+          SparseArray<Parcelable> obj = bundle.getSparseParcelableArray(key);
+          try {
+            mSaveStates.put(Integer.parseInt(key.substring(PREFIX_LENGTH)), obj);
+          } catch (Exception ignored) {
+          }
+        }
+      }
+    }
+    super.restoreState(state, loader);
   }
 
   protected static class RecycleCache {
