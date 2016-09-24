@@ -17,14 +17,19 @@
 package me.henrytao.recyclerpageradapter;
 
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v4.os.ParcelableCompat;
+import android.support.v4.os.ParcelableCompatCreatorCallbacks;
 import android.support.v4.view.PagerAdapter;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by henrytao on 11/13/15.
@@ -37,15 +42,15 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   public abstract VH onCreateViewHolder(ViewGroup parent, int viewType);
 
-  private static final String STATE = "STATE";
+  private static final String STATE = "RECYCLER_PAGER_ADAPTER_STATE";
 
   private static final String TAG = "RecyclerPagerAdapter";
 
   public static boolean DEBUG = false;
 
-  private Logger mLogger;
+  Map<Integer, RecycleCache> mRecycleCacheMap = new HashMap<>();
 
-  private SparseArray<RecycleCache> mRecycleCacheMap = new SparseArray<>();
+  private Logger mLogger;
 
   private SparseArray<Parcelable> mSavedState = new SparseArray<>();
 
@@ -62,6 +67,11 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
       viewHolder.mCurrentPosition = position;
       parent.removeView(viewHolder.itemView);
     }
+  }
+
+  @Override
+  public void finishUpdate(ViewGroup container) {
+    super.finishUpdate(container);
   }
 
   @Override
@@ -82,16 +92,17 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
   @Override
   public Object instantiateItem(ViewGroup parent, int position) {
     int viewType = getItemViewType(position);
-    if (mRecycleCacheMap.get(viewType) == null) {
+    if (!mRecycleCacheMap.containsKey(viewType)) {
       mRecycleCacheMap.put(viewType, new RecycleCache(this, parent, viewType));
     }
     ViewHolder viewHolder = mRecycleCacheMap.get(viewType).getFreeViewHolder();
     viewHolder.mIsAttached = true;
+    viewHolder.mCurrentPosition = position;
     onBindViewHolder((VH) viewHolder, position);
     parent.addView(viewHolder.itemView);
     mLogger.d("instantiateItem | position: %d | viewType: %d | cacheCount: %d",
         position, viewType, mRecycleCacheMap.get(viewType).mCaches.size());
-    viewHolder.restoreState(mSavedState.get(position), null);
+    viewHolder.restoreState(mSavedState.get(position));
     return viewHolder;
   }
 
@@ -111,12 +122,13 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   @Override
   public void restoreState(Parcelable state, ClassLoader loader) {
-    super.restoreState(state, loader);
     if (state instanceof Bundle) {
       Bundle bundle = (Bundle) state;
+      bundle.setClassLoader(loader);
       SparseArray<Parcelable> ss = bundle.containsKey(STATE) ? bundle.getSparseParcelableArray(STATE) : null;
       mSavedState = ss != null ? ss : new SparseArray<Parcelable>();
     }
+    super.restoreState(state, loader);
   }
 
   @Override
@@ -144,9 +156,8 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   private List<ViewHolder> getAttachedViewHolders() {
     List<ViewHolder> viewHolders = new ArrayList<>();
-    int size = mRecycleCacheMap.size();
-    for (int index = 0; index < size; index++) {
-      List<ViewHolder> cache = mRecycleCacheMap.get(index).mCaches;
+    for (Map.Entry<Integer, RecycleCache> entry : mRecycleCacheMap.entrySet()) {
+      List<ViewHolder> cache = entry.getValue().mCaches;
       int i = 0;
       for (int n = cache.size(); i < n; i++) {
         if (cache.get(i).mIsAttached) {
@@ -191,7 +202,7 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   public static abstract class ViewHolder {
 
-    private static final String STATE = "STATE";
+    private static final String STATE = "VIEW_HOLDER_STATE";
 
     public final View itemView;
 
@@ -206,17 +217,13 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
       this.itemView = itemView;
     }
 
-    public void restoreState(Parcelable state, ClassLoader loader) {
-      try {
-        if (state instanceof Bundle) {
-          Bundle bundle = (Bundle) state;
-          SparseArray<Parcelable> ss = bundle.containsKey(STATE) ? bundle.getSparseParcelableArray(STATE) : null;
-          if (ss != null) {
-            itemView.restoreHierarchyState(ss);
-          }
+    public void restoreState(Parcelable state) {
+      if (state instanceof Bundle) {
+        Bundle bundle = (Bundle) state;
+        SparseArray<Parcelable> ss = bundle.containsKey(STATE) ? bundle.getSparseParcelableArray(STATE) : null;
+        if (ss != null) {
+          itemView.restoreHierarchyState(ss);
         }
-      } catch (Exception ignore) {
-        ignore.printStackTrace();
       }
     }
 
@@ -226,6 +233,60 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
       Bundle bundle = new Bundle();
       bundle.putSparseParcelableArray(STATE, state);
       return bundle;
+    }
+
+    public static class SavedState extends View.BaseSavedState {
+
+      public static final Parcelable.Creator<ViewHolder.SavedState> CREATOR = ParcelableCompat
+          .newCreator(new ParcelableCompatCreatorCallbacks<SavedState>() {
+            @Override
+            public ViewHolder.SavedState createFromParcel(Parcel in, ClassLoader loader) {
+              return new ViewHolder.SavedState(in, loader);
+            }
+
+            @Override
+            public ViewHolder.SavedState[] newArray(int size) {
+              return new ViewHolder.SavedState[size];
+            }
+          });
+
+      ClassLoader loader;
+
+      SparseArray<Parcelable> viewState;
+
+      public SavedState(Parcelable superState) {
+        super(superState);
+      }
+
+      SavedState(Parcel in, ClassLoader loader) {
+        super(in);
+        if (loader == null) {
+          loader = getClass().getClassLoader();
+        }
+        viewState = new SparseArray<>();
+        SparseArray data = in.readSparseArray(loader);
+        int n = data != null ? data.size() : 0;
+        for (int i = 0; i < n; i++) {
+          viewState.put(data.keyAt(i), (Parcelable) data.get(i));
+        }
+        this.loader = loader;
+      }
+
+      @Override
+      public String toString() {
+        return "ViewHolder.SavedState{" + Integer.toHexString(System.identityHashCode(this)) + "}";
+      }
+
+      @Override
+      public void writeToParcel(Parcel out, int flags) {
+        super.writeToParcel(out, flags);
+        SparseArray<Object> data = new SparseArray<>();
+        int n = viewState.size();
+        for (int i = 0; i < n; i++) {
+          data.put(viewState.keyAt(i), viewState.get(i));
+        }
+        out.writeSparseArray(data);
+      }
     }
   }
 }
