@@ -18,10 +18,25 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent">
 
-  <TextView
-    android:id="@+id/text"
-    android:layout_centerHorizontal="true"
-    android:layout_centerVertical="true"
-    android:text="Pager..."
-    style="@style/MdText.Subhead1.SingleLine" />
+  <android.support.v4.widget.NestedScrollView
+    android:id="@+id/nested_scroll_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <TextView
+        android:id="@+id/text"
+        android:text="Pager..."
+        style="@style/MdText.Subhead1.SingleLine" />
+
+      <TextView
+        android:text="@string/text_long"
+        style="@style/MdText.Body1" />
+    </LinearLayout>
+  </android.support.v4.widget.NestedScrollView>
 </RelativeLayout>
