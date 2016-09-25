@@ -188,7 +188,7 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
     public ViewHolder(View itemView) {
       if (itemView == null) {
-        throw new IllegalArgumentException("itemView may not be null");
+        throw new IllegalArgumentException("itemView should not be null");
       }
       this.itemView = itemView;
     }
