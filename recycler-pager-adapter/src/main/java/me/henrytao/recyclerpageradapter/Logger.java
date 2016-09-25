@@ -18,6 +18,9 @@ package me.henrytao.recyclerpageradapter;
 
 import android.util.Log;
 
+/**
+ * Created by henrytao on 11/13/15.
+ */
 public final class Logger {
 
   private static final String DEFAULT_TAG = "Logger";
