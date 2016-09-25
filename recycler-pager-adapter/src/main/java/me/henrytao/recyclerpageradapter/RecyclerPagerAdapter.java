@@ -37,9 +37,9 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   public abstract VH onCreateViewHolder(ViewGroup parent, int viewType);
 
-  private static final String STATE = "RECYCLER_PAGER_ADAPTER_STATE";
+  private static final String STATE = RecyclerPagerAdapter.class.getSimpleName();
 
-  private static final String TAG = "RecyclerPagerAdapter";
+  private static final String TAG = RecyclerPagerAdapter.class.getSimpleName();
 
   public static boolean DEBUG = false;
 
@@ -150,18 +150,18 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
     return attachedViewHolders;
   }
 
-  protected static class RecycleCache {
+  private static class RecycleCache {
 
     private final RecyclerPagerAdapter mAdapter;
 
     private final List<ViewHolder> mCaches;
 
-    public RecycleCache(RecyclerPagerAdapter adapter) {
+    RecycleCache(RecyclerPagerAdapter adapter) {
       mAdapter = adapter;
       mCaches = new ArrayList<>();
     }
 
-    public ViewHolder getFreeViewHolder(ViewGroup parent, int viewType) {
+    ViewHolder getFreeViewHolder(ViewGroup parent, int viewType) {
       int i = 0;
       ViewHolder viewHolder;
       for (int n = mCaches.size(); i < n; i++) {
@@ -178,7 +178,7 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
 
   public static abstract class ViewHolder {
 
-    private static final String STATE = "VIEW_HOLDER_STATE";
+    private static final String STATE = ViewHolder.class.getSimpleName();
 
     public final View itemView;
 
@@ -193,18 +193,18 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
       this.itemView = itemView;
     }
 
-    public void attach(ViewGroup parent, int position) {
+    private void attach(ViewGroup parent, int position) {
       mIsAttached = true;
       mPosition = position;
       parent.addView(itemView);
     }
 
-    public void detach(ViewGroup parent) {
+    private void detach(ViewGroup parent) {
       parent.removeView(itemView);
       mIsAttached = false;
     }
 
-    public void onRestoreInstanceState(Parcelable state) {
+    private void onRestoreInstanceState(Parcelable state) {
       if (state instanceof Bundle) {
         Bundle bundle = (Bundle) state;
         SparseArray<Parcelable> ss = bundle.containsKey(STATE) ? bundle.getSparseParcelableArray(STATE) : null;
@@ -214,7 +214,7 @@ public abstract class RecyclerPagerAdapter<VH extends RecyclerPagerAdapter.ViewH
       }
     }
 
-    public Parcelable onSaveInstanceState() {
+    private Parcelable onSaveInstanceState() {
       SparseArray<Parcelable> state = new SparseArray<>();
       itemView.saveHierarchyState(state);
       Bundle bundle = new Bundle();
